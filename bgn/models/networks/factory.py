@@ -15,10 +15,14 @@ def factory(engine):
     if opt['name'] == 'bgn_net':
         net = BgnNet(
             txt_enc=opt['txt_enc'],
-            glimpse=opt['glimpse'],
+            i_glimpse=opt['i_glimpse'],
+            q_glimpse=opt['q_glimpse'],
             objects=opt['objects'],
             use_counter=opt['use_counter'],
-            feat_dims=opt['feat_dims'],
+            v_dim=opt['v_dim'],
+            q_dim=opt['q_dim'],
+            k_dim=opt['k_dim'],
+            # feat_dims=opt['feat_dims'],
             q_max_length=opt['q_max_length'],
             wid_to_word=dataset.wid_to_word,
             word_to_wid=dataset.word_to_wid,
