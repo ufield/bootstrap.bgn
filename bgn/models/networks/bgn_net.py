@@ -13,10 +13,8 @@ from block.models.networks.vqa_net import factory_text_enc
 from block.models.networks.vqa_net import mask_softmax
 from block.models.networks.mlp import MLP
 from .fc_layer import FCLayer
-# from .attention import LowLankBilinearPooling, BilinearAttentionMap
 from .graphs import ImageGraph, QuestionGraph
 from .classifier import Classifier
-from .counting import Counter
 
 import pdb
 
@@ -29,11 +27,10 @@ class BgnNet(nn.Module):
             q_glimpse=2,
             layers=2,
             objects=36,
-            use_counter=True,
+            soft_attention=True,
             v_dim=2048,
             q_dim=2400,
             k_dim=2400,
-            # feat_dims={},
             wid_to_word={},
             word_to_wid={},
             aid_to_ans=[],
@@ -42,14 +39,12 @@ class BgnNet(nn.Module):
         self.layers = layers
         self.q_max_length = q_max_length
         self.objects = objects
-        self.use_counter = use_counter
         self.wid_to_word = wid_to_word
         self.word_to_wid = word_to_wid
         self.aid_to_ans = aid_to_ans
         self.ans_to_aid = ans_to_aid
 
         self.txt_enc = factory_text_enc(self.wid_to_word, txt_enc)
-        # self.counter = Counter(objects)
 
         self.image_graphs = []
         self.question_graphs = []

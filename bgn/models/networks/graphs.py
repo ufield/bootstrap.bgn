@@ -14,10 +14,11 @@ class ImageGraph(nn.Module):
             v_dim,
             q_dim,
             k_dim,
+            soft_attention=True,
             i_glimpse=2
         ):
         super(ImageGraph, self).__init__()
-        self.v_att = BilinearAttentionMap(v_dim, q_dim, k_dim, glimpse=i_glimpse)
+        self.v_att = BilinearAttentionMap(v_dim, q_dim, k_dim, soft_attention=soft_attention, glimpse=i_glimpse)
         self.i_glimpse = i_glimpse
 
         self.b_net = []
@@ -47,10 +48,11 @@ class QuestionGraph(nn.Module):
             self,
             q_dim,
             k_dim,
+            soft_attention=True,
             q_glimpse=2
         ):
         super(QuestionGraph, self).__init__()
-        self.att = BilinearAttentionMap(q_dim, q_dim, k_dim, glimpse=q_glimpse)
+        self.att = BilinearAttentionMap(q_dim, q_dim, k_dim, soft_attention=soft_attention, glimpse=q_glimpse)
         self.q_glimpse = q_glimpse
 
         self.b_net = []

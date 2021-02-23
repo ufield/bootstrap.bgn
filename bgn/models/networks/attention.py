@@ -14,7 +14,6 @@ class LowLankBilinearPooling(nn.Module):
             h_out,
             activation='ReLU',
             dropout=[0.2, 0.5],
-            # k=3
         ):
         super(LowLankBilinearPooling, self).__init__()
         # self.k = k
@@ -23,23 +22,14 @@ class LowLankBilinearPooling(nn.Module):
         self.h_dim = h_dim
         self.h_out = h_out
 
-        # pdb.set_trace()
-
-        # self.v_net = FCLayer(v_dim, h_dim * self.k, activation=activation, dropout=dropout[0])
-        # self.q_net = FCLayer(q_dim, h_dim * self.k, activation=activation, dropout=dropout[0])
         self.v_net = FCLayer(v_dim, h_dim, activation=activation, dropout=dropout[0])
         self.q_net = FCLayer(q_dim, h_dim, activation=activation, dropout=dropout[0])
 
         if h_out is not None:
             self.h_mat = nn.Parameter(torch.Tensor(1, h_out, 1, h_dim).normal_())
-            # self.h_mat = nn.Parameter(torch.Tensor(1, h_out, 1, h_dim * self.k).normal_())
             self.h_bias = nn.Parameter(torch.Tensor(1, h_out, 1, 1).normal_())
 
         self.dropout = nn.Dropout(dropout[1]) # attention
-
-        # if 1 < k:
-        #     self.p_net = nn.AvgPool1d(self.k, stride=self.k)
-
 
     def forward(self, v, q, w):
         if w is None:
@@ -61,9 +51,6 @@ class LowLankBilinearPooling(nn.Module):
         v_ = self.v_net(v) # b x v x d
         q_ = self.q_net(q) # b x q x d
         logits = torch.einsum('bnk,bvm,bmk->bkm', (v_, w, q_))
-        # if 1 < self.k:
-        #     logits = logits.unsqueeze(1) # b x 1 x d
-        #     logits = self.p_net(logits).squeeze(1) * self.k # sum-pooling
 
         return logits
 
@@ -74,17 +61,19 @@ class BilinearAttentionMap(nn.Module):
             v_dim,
             q_dim,
             h_dim,
-            glimpse,
+            glimpse=2,
+            soft_attention=True,
             dropout=[0.2, 0.5]
         ):
         super(BilinearAttentionMap, self).__init__()
 
         self.glimpse = glimpse
-        # self.logits = weight_norm(LowLankBilinearPooling(v_dim, q_dim, h_dim, glimpse, dropout=dropout, device=device, k=3),
-        #                         dim=None)
-        self.logits = LowLankBilinearPooling(v_dim, q_dim, h_dim, glimpse, dropout=dropout)
-        # self.logits = weight_norm(LowLankBilinearPooling(v_dim, q_dim, h_dim, glimpse, dropout=dropout, k=3),
-        #                           name='h_mat', dim=None)
+
+        if soft_attention:
+            self.logits = weight_norm(LowLankBilinearPooling(v_dim, q_dim, h_dim, glimpse, dropout=dropout),
+                                  name='h_mat', dim=None)
+        else :
+            self.logits = LowLankBilinearPooling(v_dim, q_dim, h_dim, glimpse, dropout=dropout)
 
         pass
 
