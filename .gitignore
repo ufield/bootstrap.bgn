@@ -118,6 +118,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-options/
-!bgn.yaml
+
+bgn/options/vqa2/*
+!bgn/options/vqa2/bgn.yaml
 analyze/

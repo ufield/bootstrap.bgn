@@ -1,0 +1,79 @@
+exp:
+  dir: logs/vqa2/bgn
+  resume: # last, best_[...], or empty (from scratch)
+dataset:
+  import: bgn.datasets.factory
+  name: vqa2 # or vqa2vg
+  dir: data/vqa/vqa2
+  train_split: train
+  eval_split: val # or test
+  proc_split: train # or trainval (preprocessing split, must be equal to train_split)
+  nb_threads: 4
+  batch_size: 12
+  nans: 3000
+  minwcount: 0
+  nlp: mcb
+  samplingans: True
+  dir_rcnn: data/vqa/coco/extract_rcnn/2018-04-27_bottom-up-attention_fixed_36
+  vg: False
+  dir_vg: data/vqa/vgenome
+  dir_rcnn_vg: data/vqa/vgenome/extract_rcnn/2018-04-27_bottom-up-attention_fixed_36
+model:
+  name: default
+  network:
+    import: bgn.models.networks.factory
+    name: bgn_net
+    txt_enc:
+      name: skipthoughts
+      type: BayesianUniSkip
+      dropout: 0.25
+      fixed_emb: False
+      dir_st: data/skip-thoughts
+    q_max_length: 14
+    i_glimpse: 2
+    q_glimpse: 2
+    layers: 2
+    objects: 36
+    soft_attention: True
+    v_dim: 2048
+    q_dim: 2400
+    k_dim: 3200
+    classifier:
+      in_dim: 2400
+      out_dim: 3000
+  criterion:
+    import: bgn.models.criterions.factory
+    name: vqa_cross_entropy
+  metric:
+    import: bgn.models.metrics.factory
+    name: vqa_accuracies
+optimizer:
+  import: bgn.optimizers.factory
+  name: Adam
+  lr: 0.0003
+  gradual_warmup_steps: [0.5, 2.0, 7.0] #torch.linspace
+  lr_decay_epochs: [14, 24, 2] #range
+  lr_decay_rate: .25
+engine:
+  name: logger
+  debug: False
+  print_freq: 10
+  nb_epochs: 1
+  saving_criteria:
+  - eval_epoch.accuracy_top1:max
+misc:
+  logs_name:
+  cuda: True
+  seed: 1337
+views:
+  names:
+  - plotly
+  - tensorboard
+  items_plotly:
+  - logs:train_epoch.loss+logs:eval_epoch.loss
+  - logs:train_epoch.accuracy_top1+logs:eval_epoch.accuracy_top1
+  - logs_train_oe:train_epoch.overall+logs_val_oe:eval_epoch.overall
+  items_tensorboard:
+  - logs:train_epoch.loss+logs:eval_epoch.loss
+  - logs:train_epoch.accuracy_top1+logs:eval_epoch.accuracy_top1
+  - logs_train_oe:train_epoch.overall+logs_val_oe:eval_epoch.overall
